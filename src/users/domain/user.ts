@@ -2,15 +2,9 @@ import { Exclude, Expose } from 'class-transformer';
 import { FileType } from '../../files/domain/file';
 import { Role } from '../../roles/domain/role';
 import { Status } from '../../statuses/domain/status';
-import { ApiProperty } from '@nestjs/swagger';
-import databaseConfig from '../../database/config/database.config';
-import { DatabaseConfig } from '../../database/config/database-config.type';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-// <database-block>
-const idType = (databaseConfig() as DatabaseConfig).isDocumentDatabase
-  ? String
-  : Number;
-// </database-block>
+const idType = String;
 
 export class User {
   @ApiProperty({
@@ -25,6 +19,19 @@ export class User {
   @Expose({ groups: ['me', 'admin'] })
   email: string | null;
 
+  @ApiPropertyOptional({
+    type: String,
+    example: '+260971234567',
+  })
+  @Expose({ groups: ['me', 'admin'] })
+  phoneNumber: string | null;
+
+  @ApiPropertyOptional({
+    type: Date,
+  })
+  @Expose({ groups: ['me', 'admin'] })
+  phoneVerifiedAt?: Date | null;
+
   @Exclude({ toPlainOnly: true })
   password?: string;
 
@@ -34,13 +41,6 @@ export class User {
   })
   @Expose({ groups: ['me', 'admin'] })
   provider: string;
-
-  @ApiProperty({
-    type: String,
-    example: '1234567890',
-  })
-  @Expose({ groups: ['me', 'admin'] })
-  socialId?: string | null;
 
   @ApiProperty({
     type: String,

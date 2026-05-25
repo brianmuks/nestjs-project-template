@@ -1,7 +1,7 @@
 # Project instructions
 
-NestJS boilerplate supporting both relational (TypeORM/PostgreSQL) and document (Mongoose/MongoDB) persistence.
+NestJS API template using MongoDB/Mongoose persistence and Twilio Verify SMS phone authentication.
 
 ## When adding entities, schemas, or properties
 
-Use the `generate` skill (auto-loaded from [.claude/skills/generate/SKILL.md](.claude/skills/generate/SKILL.md)). It documents the project's CLI generators (`npm run generate:resource:*`, `npm run add:property:to-*`) which keep both database variants, DTOs, modules, and migrations in sync. Do not hand-write entity files.
+Use the document generators (`npm run generate:resource:document` and `npm run add:property:to-document`) for ordinary resources. For identity or authentication changes, review the domain model, Mongoose schema/indexes, mapper, repository port, and tests together.

@@ -13,7 +13,6 @@ import bcrypt from 'bcryptjs';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { AuthUpdateDto } from './dto/auth-update.dto';
 import { AuthProvidersEnum } from './auth-providers.enum';
-import { SocialInterface } from '../social/interfaces/social.interface';
 import { AuthRegisterLoginDto } from './dto/auth-register-login.dto';
 import { NullableType } from '../utils/types/nullable.type';
 import { LoginResponseDto } from './dto/login-response.dto';
@@ -28,6 +27,8 @@ import { Session } from '../session/domain/session';
 import { SessionService } from '../session/session.service';
 import { StatusEnum } from '../statuses/statuses.enum';
 import { User } from '../users/domain/user';
+import { TwilioVerifyService } from './twilio-verify.service';
+import { AuthPhoneVerifyOtpDto } from './dto/auth-phone-verify-otp.dto';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +38,7 @@ export class AuthService {
     private readonly sessionService: SessionService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService<AllConfigType>,
+    private readonly twilioVerifyService: TwilioVerifyService,
   ) {}
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
@@ -108,89 +110,49 @@ export class AuthService {
     };
   }
 
-  async validateSocialLogin(
-    authProvider: string,
-    socialData: SocialInterface,
+  async requestPhoneOtp(phoneNumber: string): Promise<void> {
+    await this.twilioVerifyService.sendSmsVerification(phoneNumber);
+  }
+
+  async validatePhoneOtp(
+    verifyDto: AuthPhoneVerifyOtpDto,
   ): Promise<LoginResponseDto> {
-    let user: NullableType<User> = null;
-    const socialEmail = socialData.email?.toLowerCase();
-    let userByEmail: NullableType<User> = null;
+    const approved = await this.twilioVerifyService.isVerificationApproved(
+      verifyDto.phoneNumber,
+      verifyDto.code,
+    );
 
-    if (socialEmail) {
-      userByEmail = await this.usersService.findByEmail(socialEmail);
-    }
-
-    if (socialData.id) {
-      user = await this.usersService.findBySocialIdAndProvider({
-        socialId: socialData.id,
-        provider: authProvider,
-      });
-    }
-
-    if (user) {
-      if (socialEmail && !userByEmail) {
-        user.email = socialEmail;
-      }
-      await this.usersService.update(user.id, user);
-    } else if (userByEmail) {
-      user = userByEmail;
-    } else if (socialData.id) {
-      const role = {
-        id: RoleEnum.user,
-      };
-      const status = {
-        id: StatusEnum.active,
-      };
-
-      user = await this.usersService.create({
-        email: socialEmail ?? null,
-        firstName: socialData.firstName ?? null,
-        lastName: socialData.lastName ?? null,
-        socialId: socialData.id,
-        provider: authProvider,
-        role,
-        status,
-      });
-
-      user = await this.usersService.findById(user.id);
-    }
-
-    if (!user) {
-      throw new UnprocessableEntityException({
-        status: HttpStatus.UNPROCESSABLE_ENTITY,
+    if (!approved) {
+      throw new UnauthorizedException({
+        status: HttpStatus.UNAUTHORIZED,
         errors: {
-          user: 'userNotFound',
+          code: 'invalidOrExpiredCode',
         },
       });
     }
 
-    const hash = crypto
-      .createHash('sha256')
-      .update(randomStringGenerator())
-      .digest('hex');
+    let user = await this.usersService.findByPhoneNumber(verifyDto.phoneNumber);
 
-    const session = await this.sessionService.create({
-      user,
-      hash,
-    });
+    if (!user) {
+      user = await this.usersService.create({
+        email: null,
+        phoneNumber: verifyDto.phoneNumber,
+        phoneVerifiedAt: new Date(),
+        firstName: null,
+        lastName: null,
+        provider: AuthProvidersEnum.phone,
+        role: { id: RoleEnum.user },
+        status: { id: StatusEnum.active },
+      });
+    } else {
+      user =
+        (await this.usersService.update(user.id, {
+          phoneVerifiedAt: new Date(),
+          status: { id: StatusEnum.active },
+        })) ?? user;
+    }
 
-    const {
-      token: jwtToken,
-      refreshToken,
-      tokenExpires,
-    } = await this.getTokensData({
-      id: user.id,
-      role: user.role,
-      sessionId: session.id,
-      hash,
-    });
-
-    return {
-      refreshToken,
-      token: jwtToken,
-      tokenExpires,
-      user,
-    };
+    return this.createSessionResponse(user);
   }
 
   async register(dto: AuthRegisterLoginDto): Promise<void> {
@@ -537,6 +499,32 @@ export class AuthService {
 
   async logout(data: Pick<JwtRefreshPayloadType, 'sessionId'>) {
     return this.sessionService.deleteById(data.sessionId);
+  }
+
+  private async createSessionResponse(user: User): Promise<LoginResponseDto> {
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    const session = await this.sessionService.create({
+      user,
+      hash,
+    });
+
+    const { token, refreshToken, tokenExpires } = await this.getTokensData({
+      id: user.id,
+      role: user.role,
+      sessionId: session.id,
+      hash,
+    });
+
+    return {
+      refreshToken,
+      token,
+      tokenExpires,
+      user,
+    };
   }
 
   private async getTokensData(data: {

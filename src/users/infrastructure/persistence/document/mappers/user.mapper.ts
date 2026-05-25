@@ -12,9 +12,10 @@ export class UserMapper {
     const domainEntity = new User();
     domainEntity.id = raw._id.toString();
     domainEntity.email = raw.email;
+    domainEntity.phoneNumber = raw.phoneNumber;
+    domainEntity.phoneVerifiedAt = raw.phoneVerifiedAt;
     domainEntity.password = raw.password;
     domainEntity.provider = raw.provider;
-    domainEntity.socialId = raw.socialId;
     domainEntity.firstName = raw.firstName;
     domainEntity.lastName = raw.lastName;
     if (raw.photo) {
@@ -68,9 +69,10 @@ export class UserMapper {
       persistenceSchema._id = domainEntity.id;
     }
     persistenceSchema.email = domainEntity.email;
+    persistenceSchema.phoneNumber = domainEntity.phoneNumber;
+    persistenceSchema.phoneVerifiedAt = domainEntity.phoneVerifiedAt;
     persistenceSchema.password = domainEntity.password;
     persistenceSchema.provider = domainEntity.provider;
-    persistenceSchema.socialId = domainEntity.socialId;
     persistenceSchema.firstName = domainEntity.firstName;
     persistenceSchema.lastName = domainEntity.lastName;
     persistenceSchema.photo = photo;

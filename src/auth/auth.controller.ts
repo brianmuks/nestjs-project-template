@@ -12,7 +12,12 @@ import {
   SerializeOptions,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiAcceptedResponse,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { AuthForgotPasswordDto } from './dto/auth-forgot-password.dto';
 import { AuthConfirmEmailDto } from './dto/auth-confirm-email.dto';
@@ -24,6 +29,9 @@ import { LoginResponseDto } from './dto/login-response.dto';
 import { NullableType } from '../utils/types/nullable.type';
 import { User } from '../users/domain/user';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
+import { AuthPhoneRequestOtpDto } from './dto/auth-phone-request-otp.dto';
+import { AuthPhoneVerifyOtpDto } from './dto/auth-phone-verify-otp.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Auth')
 @Controller({
@@ -43,6 +51,33 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   public login(@Body() loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
     return this.service.validateLogin(loginDto);
+  }
+
+  @Post('phone/request-otp')
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  @ApiAcceptedResponse({
+    description: 'A one-time verification code has been requested by SMS.',
+  })
+  @HttpCode(HttpStatus.ACCEPTED)
+  public requestPhoneOtp(
+    @Body() requestDto: AuthPhoneRequestOtpDto,
+  ): Promise<void> {
+    return this.service.requestPhoneOtp(requestDto.phoneNumber);
+  }
+
+  @SerializeOptions({
+    groups: ['me'],
+  })
+  @Post('phone/verify-otp')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOkResponse({
+    type: LoginResponseDto,
+  })
+  @HttpCode(HttpStatus.OK)
+  public verifyPhoneOtp(
+    @Body() verifyDto: AuthPhoneVerifyOtpDto,
+  ): Promise<LoginResponseDto> {
+    return this.service.validatePhoneOtp(verifyDto);
   }
 
   @Post('email/register')

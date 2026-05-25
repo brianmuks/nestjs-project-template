@@ -19,9 +19,19 @@ export type UserSchemaDocument = HydratedDocument<UserSchemaClass>;
 export class UserSchemaClass extends EntityDocumentHelper {
   @Prop({
     type: String,
-    unique: true,
   })
   email: string | null;
+
+  @Prop({
+    type: String,
+  })
+  phoneNumber: string | null;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  phoneVerifiedAt?: Date | null;
 
   @Prop()
   password?: string;
@@ -30,12 +40,6 @@ export class UserSchemaClass extends EntityDocumentHelper {
     default: AuthProvidersEnum.email,
   })
   provider: string;
-
-  @Prop({
-    type: String,
-    default: null,
-  })
-  socialId?: string | null;
 
   @Prop({
     type: String,
@@ -74,4 +78,18 @@ export class UserSchemaClass extends EntityDocumentHelper {
 
 export const UserSchema = SchemaFactory.createForClass(UserSchemaClass);
 
+UserSchema.index(
+  { email: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { email: { $type: 'string' } },
+  },
+);
+UserSchema.index(
+  { phoneNumber: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { phoneNumber: { $type: 'string' } },
+  },
+);
 UserSchema.index({ 'role._id': 1 });

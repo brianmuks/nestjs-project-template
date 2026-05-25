@@ -54,6 +54,23 @@ export class UsersService {
       email = createUserDto.email;
     }
 
+    let phoneNumber: string | null = null;
+
+    if (createUserDto.phoneNumber) {
+      const userObject = await this.usersRepository.findByPhoneNumber(
+        createUserDto.phoneNumber,
+      );
+      if (userObject) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            phoneNumber: 'phoneNumberAlreadyExists',
+          },
+        });
+      }
+      phoneNumber = createUserDto.phoneNumber;
+    }
+
     let photo: FileType | null | undefined = undefined;
 
     if (createUserDto.photo?.id) {
@@ -119,12 +136,13 @@ export class UsersService {
       firstName: createUserDto.firstName,
       lastName: createUserDto.lastName,
       email: email,
+      phoneNumber,
+      phoneVerifiedAt: createUserDto.phoneVerifiedAt ?? null,
       password: password,
       photo: photo,
       role: role,
       status: status,
       provider: createUserDto.provider ?? AuthProvidersEnum.email,
-      socialId: createUserDto.socialId,
     });
   }
 
@@ -156,17 +174,10 @@ export class UsersService {
     return this.usersRepository.findByEmail(email);
   }
 
-  findBySocialIdAndProvider({
-    socialId,
-    provider,
-  }: {
-    socialId: User['socialId'];
-    provider: User['provider'];
-  }): Promise<NullableType<User>> {
-    return this.usersRepository.findBySocialIdAndProvider({
-      socialId,
-      provider,
-    });
+  findByPhoneNumber(
+    phoneNumber: User['phoneNumber'],
+  ): Promise<NullableType<User>> {
+    return this.usersRepository.findByPhoneNumber(phoneNumber);
   }
 
   async update(
@@ -206,6 +217,27 @@ export class UsersService {
       email = updateUserDto.email;
     } else if (updateUserDto.email === null) {
       email = null;
+    }
+
+    let phoneNumber: string | null | undefined = undefined;
+
+    if (updateUserDto.phoneNumber) {
+      const userObject = await this.usersRepository.findByPhoneNumber(
+        updateUserDto.phoneNumber,
+      );
+
+      if (userObject && userObject.id !== id) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            phoneNumber: 'phoneNumberAlreadyExists',
+          },
+        });
+      }
+
+      phoneNumber = updateUserDto.phoneNumber;
+    } else if (updateUserDto.phoneNumber === null) {
+      phoneNumber = null;
     }
 
     let photo: FileType | null | undefined = undefined;
@@ -273,12 +305,13 @@ export class UsersService {
       firstName: updateUserDto.firstName,
       lastName: updateUserDto.lastName,
       email,
+      phoneNumber,
+      phoneVerifiedAt: updateUserDto.phoneVerifiedAt,
       password,
       photo,
       role,
       status,
       provider: updateUserDto.provider,
-      socialId: updateUserDto.socialId,
     });
   }
 

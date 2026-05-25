@@ -7,8 +7,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   // decorators here
   IsEmail,
+  IsDate,
   IsNotEmpty,
   IsOptional,
+  Matches,
   MinLength,
 } from 'class-validator';
 import { FileDto } from '../../files/dto/file.dto';
@@ -23,13 +25,22 @@ export class CreateUserDto {
   @IsEmail()
   email: string | null;
 
+  @ApiPropertyOptional({ example: '+260971234567', type: String })
+  @IsOptional()
+  @Matches(/^\+[1-9]\d{7,14}$/)
+  phoneNumber?: string | null;
+
+  @ApiPropertyOptional({ type: Date })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  phoneVerifiedAt?: Date | null;
+
   @ApiProperty()
   @MinLength(6)
   password?: string;
 
   provider?: string;
-
-  socialId?: string | null;
 
   @ApiProperty({ example: 'John', type: String })
   @IsNotEmpty()

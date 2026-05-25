@@ -7,21 +7,28 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  quality:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v6
 
-      # <database-relational-block>
-      - name: Run e2e tests for NestJS with TypeORM
-        id: relational
-        run: docker compose -f docker-compose.relational.ci.yaml --env-file env-example-relational -p ci-relational up --build --exit-code-from api
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
 
-      - name: Copy prod.log from container to host
-        if: ${{ failure() && steps.relational.conclusion == 'failure' }}
-        run: docker cp ci-relational-api-1:/usr/src/app/prod.log .
-      # </database-relational-block>
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run type-check
+      - run: npm test -- --runInBand
+      - run: npm run build
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
 
       # <database-document-block>
       - name: Run e2e tests for NestJS with Mongoose

@@ -77,20 +77,12 @@ export class UsersDocumentRepository implements UserRepository {
     return userObject ? UserMapper.toDomain(userObject) : null;
   }
 
-  async findBySocialIdAndProvider({
-    socialId,
-    provider,
-  }: {
-    socialId: User['socialId'];
-    provider: User['provider'];
-  }): Promise<NullableType<User>> {
-    if (!socialId || !provider) return null;
+  async findByPhoneNumber(
+    phoneNumber: User['phoneNumber'],
+  ): Promise<NullableType<User>> {
+    if (!phoneNumber) return null;
 
-    const userObject = await this.usersModel.findOne({
-      socialId,
-      provider,
-    });
-
+    const userObject = await this.usersModel.findOne({ phoneNumber });
     return userObject ? UserMapper.toDomain(userObject) : null;
   }
 

@@ -1,38 +1,32 @@
 # Tests
 
-## Table of Contents <!-- omit in toc -->
+## Unit and Build Checks
 
-- [Unit Tests](#unit-tests)
-- [E2E Tests](#e2e-tests)
-- [Tests in Docker](#tests-in-docker)
-  - [For relational database](#for-relational-database)
-  - [For document database](#for-document-database)
-
-## Unit Tests
+Run the checks used by GitHub Actions:
 
 ```bash
-npm run test
+npm run lint
+npm run type-check
+npm test -- --runInBand
+npm run build
 ```
 
-## E2E Tests
+`src/auth/auth.service.spec.ts` covers SMS OTP request delegation, successful
+phone-user session creation, and rejected-code behavior with Twilio mocked.
+Unit tests do not send an SMS.
 
-```bash
-npm run test:e2e
-```
+## MongoDB End-to-End Tests
 
-## Tests in Docker
-
-### For relational database
-
-```bash
-npm run test:e2e:relational:docker
-```
-
-### For document database
+The container test suite starts MongoDB and the API using safe placeholder
+Twilio configuration:
 
 ```bash
 npm run test:e2e:document:docker
 ```
+
+Phone OTP integration against a real Twilio Verify Service should be run with
+a test number or Twilio-approved test strategy in the environment where real
+credentials are provided.
 
 ---
 

@@ -37,22 +37,13 @@ The main reason for using Hexagonal Architecture is to separate the business log
 │   └── update.dto.ts
 ├── infrastructure
 │   └── persistence
-│       ├── document
-│       │   ├── document-persistence.module.ts
-│       │   ├── entities
-│       │   │   └── [SCHEMA].ts
-│       │   ├── mappers
-│       │   │   └── [MAPPER].ts
-│       │   └── repositories
-│       │       └── [ADAPTER].repository.ts
-│       ├── relational
-│       │   ├── entities
-│       │   │   └── [ENTITY].ts
-│       │   ├── mappers
-│       │   │   └── [MAPPER].ts
-│       │   ├── relational-persistence.module.ts
-│       │   └── repositories
-│       │       └── [ADAPTER].repository.ts
+│       ├── document-persistence.module.ts
+│       ├── entities
+│       │   └── [SCHEMA].ts
+│       ├── mappers
+│       │   └── [MAPPER].ts
+│       └── repositories
+│           └── [ADAPTER].repository.ts
 │       └── [PORT].repository.ts
 ├── controller.ts
 ├── module.ts
@@ -62,8 +53,6 @@ The main reason for using Hexagonal Architecture is to separate the business log
 `[DOMAIN ENTITY].ts` represents an entity used in the business logic. Domain entity has no dependencies on the database or any other infrastructure.
 
 `[SCHEMA].ts` represents the **database structure**. It is used in the document-oriented database (MongoDB).
-
-`[ENTITY].ts` represents the **database structure**. It is used in the relational database (PostgreSQL).
 
 `[MAPPER].ts` is a mapper that converts **database entity** to **domain entity** and vice versa.
 
@@ -83,14 +72,14 @@ Don't try to create universal methods in the repository because they are difficu
 
 ```typescript
 // ❌
-export class UsersRelationalRepository implements UserRepository {
+export class UsersDocumentRepository implements UserRepository {
   async find(condition: UniversalConditionInterface): Promise<User> {
     // ...
   }
 }
 
 // ✅
-export class UsersRelationalRepository implements UserRepository {
+export class UsersDocumentRepository implements UserRepository {
   async findByEmail(email: string): Promise<User> {
     // ...
   }
