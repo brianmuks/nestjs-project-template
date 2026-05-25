@@ -7,6 +7,7 @@ import { UserSeedModule } from './user/user-seed.module';
 import appConfig from '../../../config/app.config';
 import databaseConfig from '../../config/database.config';
 import { MongooseConfigService } from '../../mongoose-config.service';
+import { environmentFiles } from '../../../config/environment-files';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { MongooseConfigService } from '../../mongoose-config.service';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, appConfig],
-      envFilePath: ['.env'],
+      envFilePath: environmentFiles,
     }),
     MongooseModule.forRootAsync({
       useClass: MongooseConfigService,

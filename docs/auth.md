@@ -55,7 +55,9 @@ or expired code returns `401 Unauthorized`.
 
 ## Twilio Configuration
 
-Create one Verify Service in Twilio and configure:
+Create one Verify Service in Twilio and configure it in the active backend
+environment file. For development this is `.env.development.local`; for
+production use deployment secrets or `.env.production.local`:
 
 ```dotenv
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -78,7 +80,8 @@ email login:
 - Access tokens remain valid until their configured expiry after logout.
 
 Configure the token lifetimes and long random secrets through the `AUTH_*`
-environment variables in `.env.example`.
+environment variables documented in `.env.development.example` and
+`.env.production.example`.
 
 ---
 

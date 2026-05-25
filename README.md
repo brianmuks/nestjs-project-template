@@ -30,7 +30,7 @@ gh repo create my-api --template brianmuks/nestjs-project-template --private --c
 cd my-api
 nvm use
 npm install
-cp .env.example .env
+cp .env.development.example .env.development.local
 ```
 
 The project targets Node 22 through `.nvmrc`.
@@ -38,12 +38,13 @@ The project targets Node 22 through `.nvmrc`.
 ## Local Setup
 
 1. Create a [Twilio Verify Service](https://www.twilio.com/docs/verify/api).
-2. Copy `.env.example` to `.env` and supply the three `TWILIO_*` values.
+2. Copy `.env.development.example` to `.env.development.local` and supply the
+   three development `TWILIO_*` values.
 3. Replace all `AUTH_*_SECRET` example values with long random secrets.
 4. Start MongoDB and MailDev:
 
 ```bash
-docker compose -f docker-compose.document.yaml up -d mongo mongo-express maildev
+docker compose -f docker-compose.document.yaml --env-file .env.development.local up -d mongo mongo-express maildev
 npm run seed:run:document
 npm run start:dev
 ```
@@ -51,6 +52,27 @@ npm run start:dev
 The local API uses `http://localhost:3008` by default so a Next.js application
 can run on `http://localhost:3000`. Swagger is available at
 `http://localhost:3008/docs`.
+
+## Environment Variables
+
+Configuration is selected by `NODE_ENV` and loaded in this order:
+
+```text
+.env.<environment>.local
+.env.<environment>
+.env.local
+.env
+```
+
+Use `.env.development.local` for real local Twilio and MongoDB values. It is
+ignored by git, while [.env.development.example](.env.development.example)
+documents the required variables.
+
+For production, set values in your deployment provider's secret environment
+settings whenever possible. For a self-managed host, start from
+[.env.production.example](.env.production.example) as
+`.env.production.local`; it is also ignored by git. `npm run start:prod`
+selects production configuration automatically.
 
 ## Phone Login Flow
 
@@ -118,6 +140,7 @@ npm test -- --runInBand
 npm run build
 npm run seed:run:document
 npm run start:dev
+npm run start:prod
 npm run test:e2e:document:docker
 ```
 
