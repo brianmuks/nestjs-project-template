@@ -129,6 +129,9 @@
     "node": ">=22.0.0",
     "npm": ">=8.0.0"
   },
+  "overrides": {
+    "jose": "5.10.0"
+  },
   "release-it": {
     "git": {
       "commitMessage": "chore: release v${version}"
