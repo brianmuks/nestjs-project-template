@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 22 (`nvm use` reads `.nvmrc`).
+- Node.js 24.15+ (`nvm use` reads `.nvmrc`). The Nest 12 CLI/schematics need 24.15+, and Jest needs 24.9+ to load the ESM-only NestJS 12 packages.
 - npm.
 - Docker Desktop, or an accessible MongoDB instance.
 - A Twilio account with one Verify Service configured for SMS.
