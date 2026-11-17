@@ -127,7 +127,7 @@
     "testEnvironment": "node"
   },
   "engines": {
-    "node": ">=24.9.0",
+    "node": "^24.15.0 || >=26.0.0",
     "npm": ">=10.0.0"
   },
   "release-it": {
