@@ -10,7 +10,7 @@ This repository is customized from the MIT-licensed
 
 ## Core Stack
 
-- NestJS 11 with TypeScript and Swagger/OpenAPI.
+- NestJS 12 (CommonJS app on ESM-only Nest packages) with TypeScript 6 and Swagger/OpenAPI.
 - MongoDB with Mongoose and document repository adapters.
 - Twilio Verify SMS OTP for phone registration and login.
 - Request/verification rate limiting with `@nestjs/throttler`.

@@ -17,7 +17,16 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": [
+      "node",
+      "jest"
+    ]
   },
-  "include": ["api/**/*", "src/**/*", "test/**/*", ".install-scripts/**/*"]
+  "include": [
+    "api/**/*",
+    "src/**/*",
+    "test/**/*",
+    ".install-scripts/**/*"
+  ]
 }
